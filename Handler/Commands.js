@@ -1,47 +1,44 @@
 const fs = require('fs');
 const chalk = require('chalk');
+const path = require('path');
 
 module.exports = (bot) => {
-    const commandFiles = fs.readdirSync('./Commands/').filter((file) => file.endsWith('.js'));
+    const commandsPath = path.join(__dirname, '../Commands');
 
-    for (const file of commandFiles) {
-        const command = require(`../Commands/${file}`);
+    const loadCommands = (dir) => {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const fullPath = path.join(dir, file);
+            if (fs.lstatSync(fullPath).isDirectory()) {
+                loadCommands(fullPath);
+            } else if (file.endsWith('.js')) {
+                try {
+                    const command = require(fullPath);
+                    const name = command.data?.name || command.prefix?.name;
 
-        // Use the name from the SlashCommandBuilder data if available, otherwise from prefix metadata
-        const name = command.data?.name || command.prefix?.name;
+                    if (name) {
+                        bot.commands.set(name, command);
+                        console.log(chalk.blue(`[COMMAND] ▸ Loaded ${file}`));
 
-        if (name) {
-            bot.commands.set(name, command);
-            console.log(chalk.blue(`[COMMAND] ▸ Loaded ${file}`));
-
-            if (command.prefix?.aliases && Array.isArray(command.prefix.aliases)) {
-                command.prefix.aliases.forEach((alias) => {
-                    bot.commands.set(alias, command);
-                });
-            }
-        }
-    }
-
-    // Handle subfolders if any
-    const commandSubFolders = fs.readdirSync('./Commands/').filter((folder) => !folder.endsWith('.js') && fs.lstatSync(`./Commands/${folder}`).isDirectory());
-
-    for (const folder of commandSubFolders) {
-        const subCommandFiles = fs.readdirSync(`./Commands/${folder}/`).filter((file) => file.endsWith('.js'));
-
-        for (const file of subCommandFiles) {
-            const command = require(`../Commands/${folder}/${file}`);
-            const name = command.data?.name || command.prefix?.name;
-
-            if (name) {
-                bot.commands.set(name, command);
-                console.log(chalk.blue(`[COMMAND] ▸ Loaded ${folder}/${file}`));
-
-                if (command.prefix?.aliases && Array.isArray(command.prefix.aliases)) {
-                    command.prefix.aliases.forEach((alias) => {
-                        bot.commands.set(alias, command);
-                    });
+                        if (command.prefix?.aliases && Array.isArray(command.prefix.aliases)) {
+                            command.prefix.aliases.forEach((alias) => {
+                                bot.commands.set(alias, command);
+                            });
+                        }
+                    } else {
+                        console.warn(chalk.yellow(`[COMMAND WARNING] ▸ ${file} is missing a name.`));
+                    }
+                } catch (error) {
+                    console.error(chalk.red(`[COMMAND ERROR] ▸ Failed to load ${file}:`));
+                    console.error(chalk.red(error.stack));
                 }
             }
         }
+    };
+
+    if (fs.existsSync(commandsPath)) {
+        loadCommands(commandsPath);
+    } else {
+        console.error(chalk.red(`[COMMAND ERROR] ▸ Commands directory not found at ${commandsPath}`));
     }
 };

@@ -1,38 +1,40 @@
 const fs = require('fs');
 const chalk = require('chalk');
+const path = require('path');
 
 module.exports = (bot) => {
-    const eventFiles = fs.readdirSync('./Events/').filter((file) => file.endsWith('.js'));
+    const eventsPath = path.join(__dirname, '../Events');
 
-    for (const file of eventFiles) {
-        const event = require(`../Events/${file}`);
-
-        if (event.name) {
-            if (event.once) {
-                bot.once(event.name, (...args) => event.execute(...args, bot));
-            } else {
-                bot.on(event.name, (...args) => event.execute(...args, bot));
-            }
-            console.log(chalk.yellow(`[EVENT] ▸ Loaded ${file}`));
-        }
-    }
-
-    const eventSubFolders = fs.readdirSync('./Events/').filter((folder) => !folder.endsWith('.js') && fs.lstatSync(`./Events/${folder}`).isDirectory());
-
-    for (const folder of eventSubFolders) {
-        const subEventFiles = fs.readdirSync(`./Events/${folder}/`).filter((file) => file.endsWith('.js'));
-
-        for (const file of subEventFiles) {
-            const event = require(`../Events/${folder}/${file}`);
-
-            if (event.name) {
-                if (event.once) {
-                    bot.once(event.name, (...args) => event.execute(...args, bot));
-                } else {
-                    bot.on(event.name, (...args) => event.execute(...args, bot));
+    const loadEvents = (dir) => {
+        const files = fs.readdirSync(dir);
+        for (const file of files) {
+            const fullPath = path.join(dir, file);
+            if (fs.lstatSync(fullPath).isDirectory()) {
+                loadEvents(fullPath);
+            } else if (file.endsWith('.js')) {
+                try {
+                    const event = require(fullPath);
+                    if (event.name) {
+                        if (event.once) {
+                            bot.once(event.name, (...args) => event.execute(...args, bot));
+                        } else {
+                            bot.on(event.name, (...args) => event.execute(...args, bot));
+                        }
+                        console.log(chalk.yellow(`[EVENT] ▸ Loaded ${file}`));
+                    } else {
+                        console.warn(chalk.yellow(`[EVENT WARNING] ▸ ${file} is missing a name.`));
+                    }
+                } catch (error) {
+                    console.error(chalk.red(`[EVENT ERROR] ▸ Failed to load ${file}:`));
+                    console.error(chalk.red(error.stack));
                 }
-                console.log(chalk.yellow(`[EVENT] ▸ Loaded ${folder}/${file}`));
             }
         }
+    };
+
+    if (fs.existsSync(eventsPath)) {
+        loadEvents(eventsPath);
+    } else {
+        console.error(chalk.red(`[EVENT ERROR] ▸ Events directory not found at ${eventsPath}`));
     }
 };
