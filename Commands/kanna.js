@@ -1,51 +1,76 @@
-const Discord = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const axios = require('axios');
 
-exports.help = {
-  name: 'kanna',
-  aliases: [],
-  description: 'Displays a NSFW kanna image.',
-  use: 'kanna',
-}
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('kanna')
+        .setDescription('Displays a Kanna image.'),
+    prefix: {
+        name: 'kanna',
+        aliases: [],
+        description: 'Displays a Kanna image.',
+        use: 'kanna',
+    },
+    async run(bot, message, args) {
+        try {
+            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna');
+            const embed = new EmbedBuilder()
+                .setTitle('`🐲` ▸ Kanna Image')
+                .setImage(response.data.message)
+                .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
+                .setColor(bot.color)
+                .setTimestamp();
 
-exports.run = async (bot, message, args, config) => {
-  if (config.nsfwChannel && !message.channel.nsfw) {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Not NSFW channel')
-      .setDescription(`> *This command can only be used in NSFW channels.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setEmoji('📎')
+                        .setLabel(' ▸ Link')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(response.data.message)
+                );
 
-  try {
-    const response = await axios.get('https://nekobot.xyz/api/image?type=kanna');
+            return message.reply({ embeds: [embed], components: [row] });
+        } catch {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Error occurred')
+                .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+                .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return message.reply({ embeds: [embed] });
+        }
+    },
+    async execute(bot, interaction) {
+        await interaction.deferReply();
 
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`🔞` ▸ NSFW Kanna Image')
-      .setImage(response.data.message)
-      .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
-      .setColor(config.color)
-      .setTimestamp();
+        try {
+            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna');
+            const embed = new EmbedBuilder()
+                .setTitle('`🐲` ▸ Kanna Image')
+                .setImage(response.data.message)
+                .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
+                .setColor(bot.color)
+                .setTimestamp();
 
-    const row = new Discord.ActionRowBuilder()
-      .addComponents(
-        new Discord.ButtonBuilder()
-          .setEmoji('📎')
-          .setLabel(' ▸ Link')
-          .setStyle(Discord.ButtonStyle.Link)
-          .setURL(response.data.message)
-      );
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setEmoji('📎')
+                        .setLabel(' ▸ Link')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(response.data.message)
+                );
 
-    return message.reply({ embeds: [embed], components: [row] });
-  } catch {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Error occurred')
-      .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+            return interaction.editReply({ embeds: [embed], components: [row] });
+        } catch {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Error occurred')
+                .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+                .setFooter({ text: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return interaction.editReply({ embeds: [embed] });
+        }
+    }
 };

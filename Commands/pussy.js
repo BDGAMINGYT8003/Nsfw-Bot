@@ -1,51 +1,96 @@
-const Discord = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const axios = require('axios');
 
-exports.help = {
-  name: 'pussy',
-  aliases: [],
-  description: 'Displays a NSFW pussy image.',
-  use: 'pussy',
-}
+module.exports = {
+    data: new SlashCommandBuilder()
+        .setName('pussy')
+        .setDescription('Displays a NSFW pussy image.'),
+    prefix: {
+        name: 'pussy',
+        aliases: [],
+        description: 'Displays a NSFW pussy image.',
+        use: 'pussy',
+    },
+    async run(bot, message, args) {
+        if (!message.channel.nsfw) {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Not NSFW channel')
+                .setDescription(`> *This command can only be used in NSFW channels.*`)
+                .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return message.reply({ embeds: [embed] });
+        }
 
-exports.run = async (bot, message, args, config) => {
-  if (config.nsfwChannel && !message.channel.nsfw) {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Not NSFW channel')
-      .setDescription(`> *This command can only be used in NSFW channels.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+        try {
+            const response = await axios.get('https://nekobot.xyz/api/image?type=pussy');
+            const embed = new EmbedBuilder()
+                .setTitle('`🔞` ▸ NSFW Pussy Image')
+                .setImage(response.data.message)
+                .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
+                .setColor(bot.color)
+                .setTimestamp();
 
-  try {
-    const response = await axios.get('https://nekobot.xyz/api/image?type=pussy');
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setEmoji('📎')
+                        .setLabel(' ▸ Link')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(response.data.message)
+                );
 
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`🔞` ▸ NSFW Pussy Image')
-      .setImage(response.data.message)
-      .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
-      .setColor(config.color)
-      .setTimestamp();
+            return message.reply({ embeds: [embed], components: [row] });
+        } catch {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Error occurred')
+                .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+                .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return message.reply({ embeds: [embed] });
+        }
+    },
+    async execute(bot, interaction) {
+        if (!interaction.channel.nsfw) {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Not NSFW channel')
+                .setDescription(`> *This command can only be used in NSFW channels.*`)
+                .setFooter({ text: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return interaction.reply({ embeds: [embed], ephemeral: true });
+        }
 
-    const row = new Discord.ActionRowBuilder()
-      .addComponents(
-        new Discord.ButtonBuilder()
-          .setEmoji('📎')
-          .setLabel(' ▸ Link')
-          .setStyle(Discord.ButtonStyle.Link)
-          .setURL(response.data.message)
-      );
+        await interaction.deferReply();
 
-    return message.reply({ embeds: [embed], components: [row] });
-  } catch {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Error occurred')
-      .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+        try {
+            const response = await axios.get('https://nekobot.xyz/api/image?type=pussy');
+            const embed = new EmbedBuilder()
+                .setTitle('`🔞` ▸ NSFW Pussy Image')
+                .setImage(response.data.message)
+                .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
+                .setColor(bot.color)
+                .setTimestamp();
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setEmoji('📎')
+                        .setLabel(' ▸ Link')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(response.data.message)
+                );
+
+            return interaction.editReply({ embeds: [embed], components: [row] });
+        } catch {
+            const embed = new EmbedBuilder()
+                .setTitle('`❌` ▸ Error occurred')
+                .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+                .setFooter({ text: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+                .setColor('Red')
+                .setTimestamp();
+            return interaction.editReply({ embeds: [embed] });
+        }
+    }
 };
