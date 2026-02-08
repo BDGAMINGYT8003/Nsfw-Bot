@@ -1,51 +1,91 @@
-const Discord = require('discord.js');
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const axios = require('axios');
 
-exports.help = {
-  name: 'boobs',
-  aliases: [],
-  description: 'Displays a NSFW boobs image.',
-  use: 'boobs',
-}
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('boobs')
+    .setDescription('Displays a NSFW Boobs image.'),
 
-exports.run = async (bot, message, args, config) => {
-  if (config.nsfwChannel && !message.channel.nsfw) {
-    const embed = new Discord.EmbedBuilder()
-    .setTitle('`❌` ▸ Not NSFW channel')
-    .setDescription(`> *This command can only be used in NSFW channels.*`)
-    .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-    .setColor('Red')
-    .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+  help: {
+    name: 'boobs',
+    aliases: [],
+    description: 'Displays a NSFW Boobs image.',
+    use: 'boobs',
+  },
 
-  try {
-    const response = await axios.get('https://nekobot.xyz/api/image?type=boobs');
+  async execute(interaction, bot) {
+    if (!interaction.channel.nsfw) {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Not NSFW channel')
+        .setDescription(`> *This command can only be used in NSFW channels.*`)
+        .setFooter({ text: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
+        .setColor('Red')
+        .setTimestamp();
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
 
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`🔞` ▸ NSFW Boobs Image')
-      .setImage(response.data.message)
-      .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
-      .setColor(config.color)
-      .setTimestamp();
+    try {
+      const response = await axios.get('https://nekobot.xyz/api/image?type=boobs');
+      const embed = new EmbedBuilder()
+        .setTitle('`🔞` ▸ NSFW Boobs Image')
+        .setImage(response.data.message)
+        .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
+        .setColor('#2b2d31')
+        .setTimestamp();
 
-    const row = new Discord.ActionRowBuilder()
-      .addComponents(
-        new Discord.ButtonBuilder()
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
           .setEmoji('📎')
           .setLabel(' ▸ Link')
-          .setStyle(Discord.ButtonStyle.Link)
+          .setStyle(ButtonStyle.Link)
           .setURL(response.data.message)
       );
 
-    return message.reply({ embeds: [embed], components: [row] });
-  } catch {
-    const embed = new Discord.EmbedBuilder()
-    .setTitle('`❌` ▸ Error occurred')
-    .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
-    .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-    .setColor('Red')
-    .setTimestamp();
-    return message.reply({ embeds: [embed] });
+      return interaction.reply({ embeds: [embed], components: [row] });
+    } catch {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Error occurred')
+        .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+        .setColor('Red');
+      return interaction.reply({ embeds: [embed], ephemeral: true });
+    }
+  },
+
+  async run(bot, message, args, config) {
+    if (config.nsfwChannel && !message.channel.nsfw) {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Not NSFW channel')
+        .setDescription(`> *This command can only be used in NSFW channels.*`)
+        .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+        .setColor('Red')
+        .setTimestamp();
+      return message.reply({ embeds: [embed] });
+    }
+
+    try {
+      const response = await axios.get('https://nekobot.xyz/api/image?type=boobs');
+      const embed = new EmbedBuilder()
+        .setTitle('`🔞` ▸ NSFW Boobs Image')
+        .setImage(response.data.message)
+        .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
+        .setColor(config.color)
+        .setTimestamp();
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setEmoji('📎')
+          .setLabel(' ▸ Link')
+          .setStyle(ButtonStyle.Link)
+          .setURL(response.data.message)
+      );
+
+      return message.reply({ embeds: [embed], components: [row] });
+    } catch {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Error occurred')
+        .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+        .setColor('Red');
+      return message.reply({ embeds: [embed] });
+    }
   }
 };

@@ -1,5 +1,5 @@
-const config = require('../config.json');
-const Discord = require('discord.js');
+const { EmbedBuilder } = require('discord.js');
+const chalk = require('chalk');
 
 module.exports = {
   name: 'messageCreate',
@@ -7,42 +7,46 @@ module.exports = {
     try {
       if (!message.guild || message.author.bot) return;
 
+      const prefix = process.env.BOT_PREFIX || '!';
+      const color = '#2b2d31'; // Default color
+
       const sendPrefixEmbed = () => {
-        const embed = new Discord.EmbedBuilder()
-          .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }), url: 'https://discord.gg/uhq' })
+        const embed = new EmbedBuilder()
+          .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
           .setTitle('`🪄` ▸ Prefix')
-          .setDescription(`> *The bot prefix is \`${config.prefix}\`.*`)
+          .setDescription(`> *The bot prefix is \`${prefix}\`.*`)
           .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
-          .setColor(config.color)
+          .setColor(color)
           .setTimestamp();
-        return message.reply({ embeds: [embed], allowedMentions: { repliedUser: false } });
+        return message.reply({ embeds: [embed] });
       };
 
-      if (message.content.startsWith(`<@${bot.user.id}>`)) {
-        const args = message.content.slice(`<@${bot.user.id}>`.length).trim().split(/ +/);
+      if (message.content.startsWith(`<@${bot.user.id}>`) || message.content.startsWith(`<@!${bot.user.id}>`)) {
+        const mention = message.content.startsWith(`<@!${bot.user.id}>`) ? `<@!${bot.user.id}>` : `<@${bot.user.id}>`;
+        const args = message.content.slice(mention.length).trim().split(/ +/);
         const commandName = args.shift()?.toLowerCase();
 
         if (!commandName) {
           return sendPrefixEmbed();
         }
 
-        const commandFile = bot.commands.get(commandName);
-        if (!commandFile) {
-          return sendPrefixEmbed();
-        }
+        const command = bot.commands.get(commandName);
+        if (!command) return sendPrefixEmbed();
 
-        await commandFile.run(bot, message, args, config);
-      } else if (message.content.startsWith(config.prefix)) {
-        const args = message.content.slice(config.prefix.length).trim().split(/ +/);
+        console.log(chalk.blue(`[PREFIX]`) + chalk.white(` ▸ Command: `) + chalk.cyan(commandName) + chalk.white(` | User: `) + chalk.yellow(message.author.tag));
+        await command.run(bot, message, args, { prefix, color });
+      } else if (message.content.startsWith(prefix)) {
+        const args = message.content.slice(prefix.length).trim().split(/ +/);
         const commandName = args.shift()?.toLowerCase();
 
-        const commandFile = bot.commands.get(commandName);
-        if (!commandFile) return;
+        const command = bot.commands.get(commandName);
+        if (!command) return;
 
-        await commandFile.run(bot, message, args, config);
+        console.log(chalk.blue(`[PREFIX]`) + chalk.white(` ▸ Command: `) + chalk.cyan(commandName) + chalk.white(` | User: `) + chalk.yellow(message.author.tag));
+        await command.run(bot, message, args, { prefix, color });
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   },
 };

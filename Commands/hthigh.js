@@ -3,14 +3,14 @@ const axios = require('axios');
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('anal')
-    .setDescription('Displays a NSFW Anal image.'),
+    .setName('hthigh')
+    .setDescription('Displays a NSFW H-Thigh image.'),
 
   help: {
-    name: 'anal',
-    aliases: [],
-    description: 'Displays a NSFW Anal image.',
-    use: 'anal',
+    name: 'hthigh',
+    aliases: ['htigh'],
+    description: 'Displays a NSFW H-Thigh image.',
+    use: 'hthigh',
   },
 
   async execute(interaction, bot) {
@@ -25,9 +25,9 @@ module.exports = {
     }
 
     try {
-      const response = await axios.get('https://nekobot.xyz/api/image?type=anal');
+      const response = await axios.get('https://nekobot.xyz/api/image?type=hthigh');
       const embed = new EmbedBuilder()
-        .setTitle('`🔞` ▸ NSFW Anal Image')
+        .setTitle('`🔞` ▸ NSFW H-Thigh Image')
         .setImage(response.data.message)
         .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
         .setColor('#2b2d31')
@@ -63,9 +63,9 @@ module.exports = {
     }
 
     try {
-      const response = await axios.get('https://nekobot.xyz/api/image?type=anal');
+      const response = await axios.get('https://nekobot.xyz/api/image?type=hthigh');
       const embed = new EmbedBuilder()
-        .setTitle('`🔞` ▸ NSFW Anal Image')
+        .setTitle('`🔞` ▸ NSFW H-Thigh Image')
         .setImage(response.data.message)
         .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
         .setColor(config.color)
