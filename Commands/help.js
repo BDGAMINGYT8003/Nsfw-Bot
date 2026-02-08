@@ -30,7 +30,7 @@ module.exports = {
         .setTitle('`❌` ▸ Invalid command')
         .setDescription('> *Please provide an existing command.*')
         .setColor('Red');
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.reply({ embeds: [embed], flags: [64] });
     }
 
     const embed = new EmbedBuilder()

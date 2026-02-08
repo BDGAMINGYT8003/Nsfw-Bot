@@ -14,14 +14,14 @@ module.exports = {
   },
 
   async execute(interaction, bot) {
-    if (!interaction.channel.nsfw) {
+    if (interaction.channel && !interaction.channel.nsfw) {
       const embed = new EmbedBuilder()
         .setTitle('`❌` ▸ Not NSFW channel')
         .setDescription(`> *This command can only be used in NSFW channels.*`)
         .setFooter({ text: interaction.user.username, iconURL: interaction.user.displayAvatarURL({ dynamic: true }) })
         .setColor('Red')
         .setTimestamp();
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.reply({ embeds: [embed], flags: [64] });
     }
 
     try {
@@ -29,7 +29,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('`🔞` ▸ NSFW Kanna Image')
         .setImage(response.data.message)
-        .setFooter({ text: interaction.guild.name, iconURL: interaction.guild.iconURL({ dynamic: true }) })
+        .setFooter({ text: interaction.guild ? interaction.guild.name : interaction.user.username, iconURL: interaction.guild ? interaction.guild.iconURL({ dynamic: true }) : interaction.user.displayAvatarURL({ dynamic: true }) })
         .setColor('#2b2d31')
         .setTimestamp();
 
@@ -47,7 +47,7 @@ module.exports = {
         .setTitle('`❌` ▸ Error occurred')
         .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
         .setColor('Red');
-      return interaction.reply({ embeds: [embed], ephemeral: true });
+      return interaction.reply({ embeds: [embed], flags: [64] });
     }
   },
 
@@ -67,7 +67,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setTitle('`🔞` ▸ NSFW Kanna Image')
         .setImage(response.data.message)
-        .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
+        .setFooter({ text: message.guild ? message.guild.name : message.author.username, iconURL: message.guild ? message.guild.iconURL({ dynamic: true }) : message.author.displayAvatarURL({ dynamic: true }) })
         .setColor(config.color)
         .setTimestamp();
 

@@ -8,7 +8,7 @@ module.exports = {
       console.log(chalk.blue(`[INTERACTION]`) + chalk.white(` ▸ Command: `) + chalk.cyan(interaction.commandName) + chalk.white(` | User: `) + chalk.yellow(interaction.user.tag));
       const command = bot.commands.get(interaction.commandName);
 
-      if (!command) return interaction.reply({ content: 'Command not found', ephemeral: true });
+      if (!command) return interaction.reply({ content: 'Command not found', flags: [64] });
 
       try {
         await command.execute(interaction, bot);
@@ -19,9 +19,9 @@ module.exports = {
           .setDescription('> *An error occurred while executing this command.*')
           .setColor('Red');
         if (interaction.replied || interaction.deferred) {
-          await interaction.followUp({ embeds: [embed], ephemeral: true });
+          await interaction.followUp({ embeds: [embed], flags: [64] });
         } else {
-          await interaction.reply({ embeds: [embed], ephemeral: true });
+          await interaction.reply({ embeds: [embed], flags: [64] });
         }
       }
     } else if (interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) {

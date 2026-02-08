@@ -7,6 +7,11 @@ module.exports = {
     try {
       if (!message.guild || message.author.bot) return;
 
+      // Debug log to check if message content is received (Intent check)
+      if (message.content.length === 0 && !message.attachments.size && !message.embeds.length) {
+        console.log(chalk.yellow('[WARNING]') + chalk.white(' ▸ Received message with empty content. Ensure "Message Content Intent" is enabled in Discord Developer Portal.'));
+      }
+
       const prefix = process.env.BOT_PREFIX || '!';
       const color = '#2b2d31'; // Default color
 
