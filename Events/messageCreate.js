@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const chalk = require('chalk');
 
 module.exports = {
     name: 'messageCreate',
@@ -44,7 +45,8 @@ module.exports = {
                 await command.run(bot, message, args);
             }
         } catch (e) {
-            console.error(e);
+            console.error(chalk.red(`[MESSAGE ERROR] ▸ Error in messageCreate event:`));
+            console.error(chalk.red(e.stack));
         }
     },
 };

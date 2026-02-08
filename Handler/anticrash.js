@@ -1,19 +1,37 @@
-const anticrashHandler = (bot) => {
-bot.on('error', (err) => { console.log('Une erreur non-capturée est survenue:', err); });
+const chalk = require('chalk');
 
-process.on('uncaughtExceptionMonitor', (err, origin) => { console.log(err, origin); });
+const anticrashHandler = (bot) => {
+    bot.on('error', (err) => {
+        console.error(chalk.red('[BOT ERROR] ▸'), err.stack || err);
+    });
+
+    process.on('uncaughtExceptionMonitor', (err, origin) => {
+        console.error(chalk.red('[UNCAUGHT EXCEPTION MONITOR] ▸'), err.stack || err, origin);
+    });
  
- process.on('rejectionHandled', (err) => { console.log(err); });
+    process.on('rejectionHandled', (err) => {
+        console.error(chalk.red('[REJECTION HANDLED] ▸'), err.stack || err);
+    });
  
- process.on('warning', (warning) => { console.log(warning); });
+    process.on('warning', (warning) => {
+        console.warn(chalk.yellow('[WARNING] ▸'), warning.stack || warning);
+    });
  
- process.on('uncaughtException', (error) => { console.log('Une erreur non-capturée est survenue:', error); });
+    process.on('uncaughtException', (error) => {
+        console.error(chalk.red('[UNCAUGHT EXCEPTION] ▸'), error.stack || error);
+    });
  
- process.on('unhandledRejection', (reason) => { console.log(reason); });
+    process.on('unhandledRejection', (reason) => {
+        console.error(chalk.red('[UNHANDLED REJECTION] ▸'), reason.stack || reason);
+    });
  
- process.on('processTicksAndRejections', (request, reason) => { console.log('Une erreur réseau non-capturée est survenue:', reason); });
+    process.on('processTicksAndRejections', (request, reason) => {
+        console.error(chalk.red('[PROCESS TICKS AND REJECTIONS] ▸'), reason.stack || reason);
+    });
  
- process.on('exit', (code) => { console.log(`Processus terminé avec le code ${code}`); });
+    process.on('exit', (code) => {
+        console.log(chalk.gray(`[PROCESS EXIT] ▸ Processus terminé avec le code ${code}`));
+    });
 };
 
- module.exports = anticrashHandler;
+module.exports = anticrashHandler;

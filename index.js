@@ -25,7 +25,11 @@ bot.color = '#2b2d31'; // Default color
 
 // Load Handlers
 ['Commands', 'Events', 'anticrash'].forEach(handler => {
-    require(`./Handler/${handler}`)(bot);
+    try {
+        require(`./Handler/${handler}`)(bot);
+    } catch (error) {
+        console.error(chalk.red(`[HANDLER ERROR] ▸ Failed to load ${handler}:`), error.stack);
+    }
 });
 
 async function registerSlashCommands() {
@@ -34,6 +38,7 @@ async function registerSlashCommands() {
     // Scan Commands directory recursively
     const getCommandFiles = (dir) => {
         let files = [];
+        if (!fs.existsSync(dir)) return files;
         const items = fs.readdirSync(dir);
         for (const item of items) {
             const fullPath = path.join(dir, item);
@@ -49,9 +54,13 @@ async function registerSlashCommands() {
     const commandFiles = getCommandFiles('./Commands');
 
     for (const filePath of commandFiles) {
-        const command = require(`./${filePath}`);
-        if (command.data) {
-            commands.push(command.data.toJSON());
+        try {
+            const command = require(`./${filePath}`);
+            if (command.data) {
+                commands.push(command.data.toJSON());
+            }
+        } catch (error) {
+            console.error(chalk.red(`[REGISTRATION ERROR] ▸ Failed to load command for registration at ${filePath}:`), error.stack);
         }
     }
 
@@ -67,7 +76,7 @@ async function registerSlashCommands() {
 
         console.log(chalk.green(`[!] — Successfully reloaded application (/) commands.`));
     } catch (error) {
-        console.error(chalk.red(`[!] — Error reloading application (/) commands:`), error);
+        console.error(chalk.red(`[!] — Error reloading application (/) commands:`), error.stack);
     }
 }
 
@@ -83,5 +92,14 @@ bot.login(TOKEN).then(() => {
     registerSlashCommands();
 }).catch((err) => {
     console.log(chalk.red('[!] — Please configure a valid bot token in Replit Secrets'));
-    console.error(err);
+    console.error(chalk.red(err.stack));
+});
+
+// Robust Error Handling for the process
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(chalk.red(' [UNHANDLED REJECTION] ▸'), reason.stack || reason);
+});
+
+process.on('uncaughtException', (err, origin) => {
+    console.error(chalk.red(' [UNCAUGHT EXCEPTION] ▸'), err.stack);
 });

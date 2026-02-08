@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const axios = require('axios');
+const chalk = require('chalk');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -13,7 +14,7 @@ module.exports = {
     },
     async run(bot, message, args) {
         try {
-            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna');
+            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna', { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' } });
             const embed = new EmbedBuilder()
                 .setTitle('`🐲` ▸ Kanna Image')
                 .setImage(response.data.message)
@@ -31,7 +32,9 @@ module.exports = {
                 );
 
             return message.reply({ embeds: [embed], components: [row] });
-        } catch {
+        } catch (error) {
+            console.error(chalk.red('[COMMAND ERROR] ▸ Error in kanna command:'));
+            console.error(chalk.red(error.stack));
             const embed = new EmbedBuilder()
                 .setTitle('`❌` ▸ Error occurred')
                 .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
@@ -45,7 +48,7 @@ module.exports = {
         await interaction.deferReply();
 
         try {
-            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna');
+            const response = await axios.get('https://nekobot.xyz/api/image?type=kanna', { timeout: 10000, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' } });
             const embed = new EmbedBuilder()
                 .setTitle('`🐲` ▸ Kanna Image')
                 .setImage(response.data.message)
@@ -63,7 +66,9 @@ module.exports = {
                 );
 
             return interaction.editReply({ embeds: [embed], components: [row] });
-        } catch {
+        } catch (error) {
+            console.error(chalk.red('[COMMAND ERROR] ▸ Error in kanna command:'));
+            console.error(chalk.red(error.stack));
             const embed = new EmbedBuilder()
                 .setTitle('`❌` ▸ Error occurred')
                 .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)

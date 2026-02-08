@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder } = require('discord.js');
+const chalk = require('chalk');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,18 +16,28 @@ module.exports = {
         use: 'help [command]',
     },
     async run(bot, message, args) {
-        if (!args[0]) {
-            return this.sendHelpMenu(bot, message);
-        } else {
-            return this.sendCommandDetails(bot, message, args[0]);
+        try {
+            if (!args[0]) {
+                return this.sendHelpMenu(bot, message);
+            } else {
+                return this.sendCommandDetails(bot, message, args[0]);
+            }
+        } catch (error) {
+            console.error(chalk.red('[COMMAND ERROR] ▸ Error in help prefix command:'));
+            console.error(chalk.red(error.stack));
         }
     },
     async execute(bot, interaction) {
-        const commandName = interaction.options.getString('command');
-        if (!commandName) {
-            return this.sendHelpMenu(bot, interaction);
-        } else {
-            return this.sendCommandDetails(bot, interaction, commandName);
+        try {
+            const commandName = interaction.options.getString('command');
+            if (!commandName) {
+                return this.sendHelpMenu(bot, interaction);
+            } else {
+                return this.sendCommandDetails(bot, interaction, commandName);
+            }
+        } catch (error) {
+            console.error(chalk.red('[COMMAND ERROR] ▸ Error in help slash command:'));
+            console.error(chalk.red(error.stack));
         }
     },
     async sendHelpMenu(bot, target) {
@@ -57,14 +68,7 @@ module.exports = {
             .setColor(bot.color)
             .setTimestamp();
 
-        // Optional: Add a select menu for categories (if we had categories)
-        // For now, let's just send the embed
-
-        if (isInteraction) {
-            return target.reply({ embeds: [embed] });
-        } else {
-            return target.reply({ embeds: [embed] });
-        }
+        return target.reply({ embeds: [embed] });
     },
     async sendCommandDetails(bot, target, commandName) {
         const isInteraction = target.isChatInputCommand?.();
@@ -94,7 +98,6 @@ module.exports = {
             .setColor(bot.color)
             .setTimestamp();
 
-        if (isInteraction) return target.reply({ embeds: [embed] });
         return target.reply({ embeds: [embed] });
     }
 };
