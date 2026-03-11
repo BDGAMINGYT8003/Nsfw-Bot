@@ -1,6 +1,11 @@
+const chalk = require('chalk');
+
 module.exports = {
   name: 'ready',
-  async execute(bot) {
-    await bot.user.setPresence({ activities: [{ name: 'By nekrxs.', type: 5 }], status: 'idle' });
+  once: true,
+  execute(bot) {
+    console.log(chalk.green(`[!] — Bot is fully ready and operational!`));
+    // Set a custom activity if desired
+    bot.user.setActivity('with commands', { type: 0 });
   },
 };
