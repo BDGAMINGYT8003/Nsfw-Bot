@@ -1,4 +1,3 @@
-const config = require('../config.json');
 const Discord = require('discord.js');
 
 module.exports = {
@@ -6,6 +5,8 @@ module.exports = {
   async execute(message, bot) {
     try {
       if (!message.guild || message.author.bot) return;
+
+      const config = bot.config;
 
       const sendPrefixEmbed = () => {
         const embed = new Discord.EmbedBuilder()

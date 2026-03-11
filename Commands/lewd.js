@@ -1,51 +1,63 @@
-const Discord = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder } = require('discord.js');
 const axios = require('axios');
 
-exports.help = {
-  name: 'lewd',
-  aliases: [],
-  description: 'Displays a NSFW lewd image.',
-  use: 'lewd',
-}
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('lewd')
+    .setDescription('Displays a NSFW lewd image.'),
+  help: {
+    name: 'lewd',
+    aliases: [],
+    description: 'Displays a NSFW lewd image.',
+    use: 'lewd',
+  },
+  async run(bot, message, args, config) {
+    bot.db.incrementUsage('lewd');
+    return this.sendImage(bot, message, config, message.author, message.guild, message.channel);
+  },
+  async execute(bot, interaction, options, config) {
+    bot.db.incrementUsage('lewd');
+    return this.sendImage(bot, interaction, config, interaction.user, interaction.guild, interaction.channel);
+  },
+  async sendImage(bot, context, config, user, guild, channel) {
+    if (config.nsfwChannel && !channel.nsfw) {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Not NSFW channel')
+        .setDescription(`> *This command can only be used in NSFW channels.*`)
+        .setFooter({ text: user.username, iconURL: user.displayAvatarURL({ dynamic: true }) })
+        .setColor('Red')
+        .setTimestamp();
+      return context.reply({ embeds: [embed], ephemeral: true });
+    }
 
-exports.run = async (bot, message, args, config) => {
-  if (config.nsfwChannel && !message.channel.nsfw) {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Not NSFW channel')
-      .setDescription(`> *This command can only be used in NSFW channels.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
-  }
+    try {
+      const response = await axios.get('https://nekobot.xyz/api/image?type=lewd');
 
-  try {
-    const response = await axios.get('https://nekobot.xyz/api/image?type=lewd');
+      const embed = new EmbedBuilder()
+        .setTitle('`🔞` ▸ NSFW lewd image')
+        .setImage(response.data.message)
+        .setFooter({ text: guild ? guild.name : user.username, iconURL: guild ? guild.iconURL({ dynamic: true }) : user.displayAvatarURL({ dynamic: true }) })
+        .setColor(config.color)
+        .setTimestamp();
 
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`🔞` ▸ NSFW Lewd Image')
-      .setImage(response.data.message)
-      .setFooter({ text: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) })
-      .setColor(config.color)
-      .setTimestamp();
+      const row = new ActionRowBuilder()
+        .addComponents(
+          new ButtonBuilder()
+            .setEmoji('📎')
+            .setLabel(' ▸ Link')
+            .setStyle(ButtonStyle.Link)
+            .setURL(response.data.message)
+        );
 
-    const row = new Discord.ActionRowBuilder()
-      .addComponents(
-        new Discord.ButtonBuilder()
-          .setEmoji('📎')
-          .setLabel(' ▸ Link')
-          .setStyle(Discord.ButtonStyle.Link)
-          .setURL(response.data.message)
-      );
-
-    return message.reply({ embeds: [embed], components: [row] });
-  } catch {
-    const embed = new Discord.EmbedBuilder()
-      .setTitle('`❌` ▸ Error occurred')
-      .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
-      .setFooter({ text: message.author.username, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setColor('Red')
-      .setTimestamp();
-    return message.reply({ embeds: [embed] });
+      return context.reply({ embeds: [embed], components: [row] });
+    } catch {
+      const embed = new EmbedBuilder()
+        .setTitle('`❌` ▸ Error occurred')
+        .setDescription(`> *An error occurred while fetching the image. Please try again later.*`)
+        .setFooter({ text: user.username, iconURL: user.displayAvatarURL({ dynamic: true }) })
+        .setColor('Red')
+        .setTimestamp();
+      return context.reply({ embeds: [embed], ephemeral: true });
+    }
   }
 };
